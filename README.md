@@ -1,7 +1,7 @@
 VFDTool
 ===
 
-A simple utility to create Virtual Floppy Disk (VFD) files based
+A simple utility to create Virtual Floppy Disk (VFD) files
 * Print info
 * Create
 * Create with boot sector
