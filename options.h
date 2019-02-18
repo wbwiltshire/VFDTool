@@ -17,11 +17,9 @@ private:
 	
 public:
 	string iFileName;
-	string sFileName;
 	string bFileName;
 	bool isInfo = false;
 	bool isCreate = false;
-	bool isSettings = false;
 	bool isBootSector = false;
 
 	Options();

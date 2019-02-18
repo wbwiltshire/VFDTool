@@ -73,10 +73,6 @@ int main(int argc, char *argv[])
 						cout << "Create option not currently implemented." << endl;
 					}
 
-					if (options->isSettings) {
-						cout << "Settings option not currently implemented." << endl;
-					}
-
 					if (options->isBootSector) {
 						cout << "Boot sector option not currently implemented." << endl;
 					}
@@ -117,7 +113,6 @@ void printUsage() {
 	cout << "Usage: VFDTool <options> <fileName>" << endl;
 	cout << "\t-c            : create VFD file" << endl;
 	cout << "\t-i            : print VFD file info" << endl;
-	cout << "\t-s <fileName> : JSON file for create settings " << endl;
 	cout << "\t-b <fileName> : Write boot sector to VFD" << endl;
 	cout << "\t<fileName>    : name of VFD file" << endl;
 }

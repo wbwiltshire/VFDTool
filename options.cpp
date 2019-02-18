@@ -26,12 +26,6 @@ bool Options::validateOptions(int argc, char* argv[]) {
 			(*this).isCreate = true;
 			arg++;
 		}
-		else if (argString == "-S") {
-			(*this).isSettings = true;
-			(*this).sFileName = argv[arg + 1];
-			arg++;
-			arg++;
-		}
 		else if (argString == "-B") {
 			(*this).isBootSector = true;
 			(*this).bFileName = argv[arg + 1];
@@ -44,13 +38,13 @@ bool Options::validateOptions(int argc, char* argv[]) {
 		}
 	}
 
-	if ((isCreate || isInfo || isSettings || isBootSector) && (iFileName.length() > 0))
+	if ((isCreate || isInfo || isBootSector) && (iFileName.length() > 0))
 		status = true;
 
 	return status;
 }
 string Options::toString() {
-	return "|" + iFileName + "|" + sFileName + "|" + bFileName + "|" + (isInfo ? "true" : "false") + "|" +  (isCreate ? "true" : "false") + "|" + (isSettings ? "true" : "false") + "|" +  (isBootSector ? "true" : "false");
+	return "|" + iFileName + "|" + bFileName + "|" + (isInfo ? "true" : "false") + "|" +  (isCreate ? "true" : "false") + "|" +  (isBootSector ? "true" : "false");
 }
 
 Options::~Options() {
