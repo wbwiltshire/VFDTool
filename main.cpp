@@ -59,45 +59,47 @@ int main(int argc, char *argv[])
 
 		try {
 
-			// if file exists, then print data
-			ifstream inStream(options->iFileName.c_str(), std::ios::binary);
-			if (inStream.good()) {
-				//print format of the dump
+			if (options->isInfo) {
 
-				while (!inStream.eof()) {
-					inStream.read(buffer, BUFFSIZE);
-					bytesRead = inStream.gcount();
+				// if file exists, then read BIOS Parameter Block
+				ifstream infoStream(options->iFileName.c_str(), std::ios::binary);
+				if (infoStream.good()) {
+
+					// read the sector 0
+					infoStream.read(buffer, BUFFSIZE);
+					bytesRead = infoStream.gcount();
 					totalBytesRead += bytesRead;
 
-					if (options->isCreate) {
-						cout << "Create option not currently implemented." << endl;
-					}
+					biosPB = new BIOSParmBlock(buffer);
+					biosPB->printBiosPB();
 
-					if (options->isBootSector) {
-						cout << "Boot sector option not currently implemented." << endl;
-					}
+					status = 0;
+				}
+				else {
+					printUsage();
+					status = 1;
+				}
+				delete biosPB;
+				infoStream.close();
 
-					if (options->isInfo) {
-						biosPB = new BIOSParmBlock(buffer);
-						biosPB->printBiosPB();
-					}
-					break;
+			}
+			//TODO: Implement create option
+			else if (options->isCreate) {
+				cout << "Create option not currently implemented." << endl;
+
+				//TODO: Implement create option
+				if (options->isBootSector) {
+					cout << "Boot sector option not currently implemented." << endl;
 				}
 
-				status = 0;
 			}
-			else {
-				printUsage();
-				status = 1;
-			}
-
-			delete biosPB;
-			inStream.close();
 
 		}
 		catch (exception ex) {
 			cout << "Error: " << ex.what() << endl;
 		}
+
+		cout << endl << options->toString() << endl;
 	}
 	else {
 		printUsage();
@@ -111,8 +113,8 @@ int main(int argc, char *argv[])
 
 void printUsage() {
 	cout << "Usage: VFDTool <options> <fileName>" << endl;
-	cout << "\t-c            : create VFD file" << endl;
 	cout << "\t-i            : print VFD file info" << endl;
+	cout << "\t-c            : create VFD file" << endl;
 	cout << "\t-b <fileName> : Write boot sector to VFD" << endl;
 	cout << "\t<fileName>    : name of VFD file" << endl;
 }

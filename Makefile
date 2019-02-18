@@ -7,7 +7,7 @@ CFLAGS=/c /EHsc /Zi
 LINK=link
 #LFLAGS=
 #Link with debug info
-LFLAGS= /DEBUG
+LFLAGS= /DEBUG /SUBSYSTEM:CONSOLE /MACHINE:X64
 ODIR=bin
 EXE=VFDTool.exe
 

@@ -8,7 +8,6 @@
 #include <fstream>
 #include <string>
 
-
 using std::cout;
 using std::endl;
 using std::string;
@@ -48,6 +47,5 @@ private:
 public:
 	BIOSParmBlock(char*);
 	void printBiosPB();
-	string toString();
 	~BIOSParmBlock();
 };
