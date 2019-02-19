@@ -66,6 +66,41 @@ bool FloppyDrive::create() {
 
 	return status;
 }
+
+bool FloppyDrive::createWithBootSector(string bsFName) {
+	bool status = false;
+	short size = 0;
+	unsigned short sectorSize = biosPB->biosParmBlock.bpbBytesPerSector;
+	char *buffer = new char[sectorSize];
+
+	try {
+		// Open the boot sector file for input
+		ifstream bsStream(bsFName.c_str(), std::ios::binary);
+		if (bsStream.good()) {
+			// get size of file
+			bsStream.seekg(0, bsStream.end);
+			size = bsStream.tellg();
+			bsStream.seekg(0);
+
+			// read the boot sector into buffer
+			bsStream.read(buffer, sectorSize);
+			memcpy(&biosPB->biosParmBlock, buffer, sectorSize);
+
+			// Write the new VFD will with the boot sector just read
+			if (write())
+				status = true;
+		}
+		else {
+			cout << "Unable to open bootloader file: " << bsFName << endl;
+		}
+	}
+	catch (exception ex) {
+		cout << "Exception writing VFD file with boot sector: " << ex.what() << endl;
+	}
+
+	return status;
+}
+
 BIOSParmBlock* FloppyDrive::readBIOSParmBlock() {
 	unsigned int bytesRead = 0;
 	char* buffer = new char[SECTORSIZE];

@@ -77,7 +77,12 @@ int main(int argc, char *argv[])
 
 				//TODO: Implement create option
 				if (options->isBootSector) {
-					cout << "Boot sector option not currently implemented." << endl;
+					if (floppy->createWithBootSector(options->bFileName)) {
+						status = 0;
+					}
+					else {
+						cout << "Unable to create VFD file with boot sector " << floppy->Name << endl;
+					}
 				}
 
 			}

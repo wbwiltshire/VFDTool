@@ -26,5 +26,6 @@ public:
 	FloppyDrive(string);
 	BIOSParmBlock* readBIOSParmBlock();
 	bool create();
+	bool createWithBootSector(string);
 	~FloppyDrive();
 };

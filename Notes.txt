@@ -1,2 +1,2 @@
 ndisasm -e 62 -b 16 BlankFloppy.vfd | more
-od -A -x -t z1Z BlankFloppy.vfd | more
+od -A x -t x1z BlankFloppy.vfd | more
