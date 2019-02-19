@@ -14,11 +14,11 @@ Options
 ```
 1. Create VFD
 ```
-  bin\vfdtool.exe -c BlankFloppy.vfd
+  bin\vfdtool.exe -c TestFloppy.vfd
 ```
 1. Create VFD with boot sector
 ```
-  bin\vfdtool.exe -c -b boot.bin BlankFloppy.vfd
+  bin\vfdtool.exe -c -b bin\nbootloader.bin TestFloppy.vfd
 ```
 
 For more information:

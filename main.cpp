@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
 
 			floppy = new FloppyDrive(options->iFileName);
 
+			//TODO: Implement option to list files in the FAT12 Directory, if it exists
+			//TODO: Implement option for writing a file to the FAT12 File System
 			if (options->isInfo) {
 				biosPB = floppy->readBIOSParmBlock();
 				if (biosPB) {
@@ -66,7 +68,6 @@ int main(int argc, char *argv[])
 					status = 0;
 				}
 			}
-			//TODO: Implement create option
 			else if (options->isCreate) {
 				if (floppy->create()) {
 					status = 0;
@@ -75,7 +76,6 @@ int main(int argc, char *argv[])
 					cout << "Unable to create VFD file  " << floppy->Name << endl;
 				}
 
-				//TODO: Implement create option
 				if (options->isBootSector) {
 					if (floppy->createWithBootSector(options->bFileName)) {
 						status = 0;

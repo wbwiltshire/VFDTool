@@ -81,6 +81,7 @@ bool FloppyDrive::createWithBootSector(string bsFName) {
 			bsStream.seekg(0, bsStream.end);
 			size = bsStream.tellg();
 			bsStream.seekg(0);
+			//TODO: Add warning if boot sector > 512 bytes (i.e. sector size)
 
 			// read the boot sector into buffer
 			bsStream.read(buffer, sectorSize);
@@ -93,11 +94,13 @@ bool FloppyDrive::createWithBootSector(string bsFName) {
 		else {
 			cout << "Unable to open bootloader file: " << bsFName << endl;
 		}
+		bsStream.close();
 	}
 	catch (exception ex) {
 		cout << "Exception writing VFD file with boot sector: " << ex.what() << endl;
 	}
 
+	delete[] buffer;
 	return status;
 }
 

@@ -27,8 +27,8 @@ $(ODIR)\$(EXE): $(ODIR)\main.obj $(ODIR)\options.obj $(ODIR)\floppydrive.obj $(O
 
 test:
 	@bin\$(EXE) -i BlankFloppy.VFD
-#	@bin\$(EXE) -c BlankFloppy.VFD
-#	@bin\$(EXE) -c -b bin\nbootloader.bin BlankFloppy.VFD
+#	@bin\$(EXE) -c TestFloppy.VFD
+#	@bin\$(EXE) -c -b bin\nbootloader.bin TestFloppy.VFD
 
 clean:
 	@IF EXIST *.pdb (del *.pdb)
