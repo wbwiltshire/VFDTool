@@ -16,13 +16,13 @@ all: $(ODIR)\$(EXE)
 .cpp{$(ODIR)}.obj: 
 	$(CC) $(CFLAGS) $** /Fo$@
 
-$(ODIR)\$(EXE): $(ODIR)\main.obj $(ODIR)\options.obj $(ODIR)\biosparmblock.obj
+$(ODIR)\$(EXE): $(ODIR)\main.obj $(ODIR)\options.obj $(ODIR)\floppydrive.obj $(ODIR)\biosparmblock.obj
 	$(LINK) $** $(LFLAGS) /out:$@
 
 test:
 	@bin\$(EXE) -i BlankFloppy.VFD
 #	@bin\$(EXE) -c BlankFloppy.VFD
-#	@bin\$(EXE) -c -s settings.json BlankFloppy.VFD
+#	@bin\$(EXE) -c -b boot.bin BlankFloppy.VFD
 
 clean:
 	@IF EXIST *.pdb (del *.pdb)

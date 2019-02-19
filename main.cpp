@@ -14,6 +14,7 @@
 #include <string>
 #include <stdio.h>
 #include "options.h"
+#include "floppydrive.h"
 #include "biosparmblock.h"
 
 using std::string;
@@ -22,9 +23,6 @@ using std::endl;
 using std::exception;
 using std::ifstream;
 using std::transform;
-
-// Constants
-const unsigned int BUFFSIZE = 512;
 
 // Globals
 
@@ -49,43 +47,33 @@ int main(int argc, char *argv[])
 {
 	unsigned int status = 0;
 	string iFName;
-	char* buffer = new char[BUFFSIZE];
 	unsigned int bytesRead = 0;
 	unsigned int totalBytesRead = 0;
 	Options* options = new Options();
-	BIOSParmBlock* biosPB;
+	FloppyDrive* floppy = NULL;
+	BIOSParmBlock* biosPB = NULL;
 
 	if (options->validateOptions(argc, argv)) {
 
 		try {
 
+			floppy = new FloppyDrive(options->iFileName);
+
 			if (options->isInfo) {
-
-				// if file exists, then read BIOS Parameter Block
-				ifstream infoStream(options->iFileName.c_str(), std::ios::binary);
-				if (infoStream.good()) {
-
-					// read the sector 0
-					infoStream.read(buffer, BUFFSIZE);
-					bytesRead = infoStream.gcount();
-					totalBytesRead += bytesRead;
-
-					biosPB = new BIOSParmBlock(buffer);
+				biosPB = floppy->readBIOSParmBlock();
+				if (biosPB) {
 					biosPB->printBiosPB();
-
 					status = 0;
 				}
-				else {
-					printUsage();
-					status = 1;
-				}
-				delete biosPB;
-				infoStream.close();
-
 			}
 			//TODO: Implement create option
 			else if (options->isCreate) {
-				cout << "Create option not currently implemented." << endl;
+				if (floppy->create()) {
+					status = 0;
+				}
+				else {
+					cout << "Unable to create VFD file  " << floppy->Name << endl;
+				}
 
 				//TODO: Implement create option
 				if (options->isBootSector) {
@@ -94,6 +82,7 @@ int main(int argc, char *argv[])
 
 			}
 
+			delete floppy;
 		}
 		catch (exception ex) {
 			cout << "Error: " << ex.what() << endl;
@@ -106,7 +95,6 @@ int main(int argc, char *argv[])
 		status = 1;
 	}
 
-	delete[] buffer;
 	delete options;
 	return status;
 }
