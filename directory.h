@@ -2,6 +2,13 @@
 // Directory class header
 /*************************************************************************************/
 #pragma once
+#include <iostream>
+#include <string>
+#include <memory>
+
+using std::cout;
+using std::endl;
+using std::string;
 
 //byte align the structure, so compiler won't pad storage
 #pragma pack(push, 1)
@@ -26,8 +33,11 @@ struct DIRECTORY {
 class Directory {
 private:
 	DIRECTORY* directory;
+	unsigned short numberOfEntries;
+	bool isEmpty(string&, string&);
 
 public:
-	Directory();
+	Directory(DIRECTORY*, unsigned short);
+	void print();
 	~Directory();
 };

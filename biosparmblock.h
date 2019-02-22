@@ -57,6 +57,6 @@ public:
 	BIOSParmBlock();
 	void fill(char*);
 	void setFAT12();
-	void printBiosPB();
+	void print();
 	~BIOSParmBlock();
 };

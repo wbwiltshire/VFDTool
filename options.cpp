@@ -20,6 +20,11 @@ bool Options::validateOptions(int argc, char* argv[]) {
 			(*this).isInfo = true;
 			arg++;
 		}
+		if (argString == "-L")
+		{
+			(*this).isList = true;
+			arg++;
+		}
 		else if (argString == "-C")
 		{
 			(*this).isCreate = true;
@@ -58,14 +63,14 @@ bool Options::validateOptions(int argc, char* argv[]) {
 	//}
 
 	//TODO: Need more robust checking for valid combinations of options
-	if ((isCreate || isInfo || isBootSector) && (iFileName.length() > 0))
+	if ((isCreate || isInfo || isList || isBootSector) && (iFileName.length() > 0))
 		status = true;
 
 
 	return status;
 }
 string Options::toString() {
-	return "|" + iFileName + "|" + bFileName + "|" + (isInfo ? "true" : "false") + "|" +  (isCreate ? "true" : "false") + "|" +  (isBootSector ? "true" : "false");
+	return "|" + iFileName + "|" + bFileName + "|" + (isInfo ? "true" : "false") + "|" + (isList ? "true" : "false") + "|" +  (isCreate ? "true" : "false") + "|" +  (isBootSector ? "true" : "false");
 }
 
 Options::~Options() {

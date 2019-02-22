@@ -69,7 +69,7 @@ void BIOSParmBlock::setFAT12() {
 	memcpy(biosParmBlock.bootSignature, signature, 2);
 }
 
-void BIOSParmBlock::printBiosPB() {
+void BIOSParmBlock::print() {
 	char oemID[9];
 	char volumeLabel[12];
 	char diskType[9];

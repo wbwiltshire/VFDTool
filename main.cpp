@@ -3,6 +3,7 @@
 //
 //  Links:
 //		https://wiki.osdev.org/FAT
+//      
 //
 /****************************************************************/
 
@@ -16,6 +17,7 @@
 #include "options.h"
 #include "floppydrive.h"
 #include "biosparmblock.h"
+#include "directory.h"
 
 using std::string;
 using std::cout;
@@ -52,6 +54,8 @@ int main(int argc, char *argv[])
 	Options* options = new Options();
 	FloppyDrive* floppy = NULL;
 	BIOSParmBlock* biosPB = NULL;
+	DIRECTORY* dirEntries = NULL;
+	Directory* directory = NULL;
 
 	if (options->validateOptions(argc, argv)) {
 
@@ -64,8 +68,20 @@ int main(int argc, char *argv[])
 			if (options->isInfo) {
 				biosPB = floppy->readBIOSParmBlock();
 				if (biosPB) {
-					biosPB->printBiosPB();
+					biosPB->print();
 					status = 0;
+				}
+			}
+			else if (options->isList) {
+				biosPB = floppy->readBIOSParmBlock();
+				if (biosPB) {
+					dirEntries = floppy->readDirectory();
+					if (dirEntries) {
+						directory = new Directory(dirEntries, biosPB->biosParmBlock.bpbRootEntries);
+						directory->print();
+						status = 0;
+						delete directory;
+					}
 				}
 			}
 			else if (options->isCreate) {
@@ -109,5 +125,8 @@ void printUsage() {
 	cout << "\t-i            : print VFD file info" << endl;
 	cout << "\t-c            : create VFD file" << endl;
 	cout << "\t-b <fileName> : Write boot sector to VFD" << endl;
+	cout << "\t-l            : list files in VFD file directory" << endl;
+	cout << "\t-a <fileName> : add file to a VFD file directory" << endl;
+	cout << "\t-r <fileName> : remove a file from VFD file directory" << endl;
 	cout << "\t<fileName>    : name of VFD file" << endl;
 }

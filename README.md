@@ -25,3 +25,4 @@ For more information:
 * [FAT12 Info](https://wiki.osdev.org/FAT)
 * [BIOS Parameter Block](http://brokenthorn.com/Resources/OSDev4.html)
 * [FAT12 Access](http://brokenthorn.com/Resources/OSDev6.html)
+* [Reading the FAT](http://www.independent-software.com/operating-system-development-file-allocation-table-and-reading-from-disk.html)

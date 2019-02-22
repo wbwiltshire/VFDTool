@@ -67,6 +67,24 @@ bool FloppyDrive::create() {
 	return status;
 }
 
+DIRECTORY* FloppyDrive::readDirectory() {
+	unsigned int dirSize = biosPB->biosParmBlock.bpbRootEntries * sizeof(DIRECTORY);
+	unsigned int dirOffset = ((biosPB->biosParmBlock.bpbSectorsPerFAT * biosPB->biosParmBlock.bpbNumberOfFATs) +
+		biosPB->biosParmBlock.bpbReservedSectors + biosPB->biosParmBlock.bpbHiddenSectors) *
+		biosPB->biosParmBlock.bpbBytesPerSector;
+
+	directory = new DIRECTORY[biosPB->biosParmBlock.bpbRootEntries]();
+	if (directory) {
+		ifstream dirStream(Name.c_str(), std::ios::binary);
+		if (dirStream.good()) {
+			//jump to the directory and read it
+			dirStream.seekg(dirOffset, std::ios::beg);
+			dirStream.read((char *)directory, dirSize);
+		}
+	}
+	return directory;
+}
+
 bool FloppyDrive::createWithBootSector(string bsFName) {
 	bool status = false;
 	short size = 0;
@@ -135,4 +153,5 @@ BIOSParmBlock* FloppyDrive::readBIOSParmBlock() {
 
 FloppyDrive::~FloppyDrive() {
 	delete biosPB;
+	delete directory;
 }

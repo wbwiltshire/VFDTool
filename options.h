@@ -21,6 +21,7 @@ public:
 	bool isInfo = false;
 	bool isCreate = false;
 	bool isBootSector = false;
+	bool isList = false;
 
 	Options();
 	bool validateOptions(int, char*[]);
