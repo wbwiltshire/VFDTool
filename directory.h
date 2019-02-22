@@ -3,12 +3,24 @@
 /*************************************************************************************/
 #pragma once
 #include <iostream>
-#include <string>
 #include <memory>
+#include <string>
+#include <sstream>
 
 using std::cout;
 using std::endl;
 using std::string;
+using std::stringstream;
+
+// Template classes
+template<class T>
+string FormatWithCommas(T value)
+{
+	stringstream ss;
+	ss.imbue(static std::locale(""));
+	ss << std::fixed << value;
+	return ss.str();
+}
 
 //byte align the structure, so compiler won't pad storage
 #pragma pack(push, 1)
@@ -34,10 +46,14 @@ class Directory {
 private:
 	DIRECTORY* directory;
 	unsigned short numberOfEntries;
+	
+	//methods
+	unsigned short freeEntries();
 	bool isEmpty(string&, string&);
 
 public:
 	Directory(DIRECTORY*, unsigned short);
+	bool addEntry(string, unsigned int);
 	void print();
 	~Directory();
 };

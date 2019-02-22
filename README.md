@@ -5,6 +5,9 @@ A simple utility to create Virtual Floppy Disk (VFD) files
 * Print info
 * Create
 * Create with boot sector
+* List directory
+* Add file
+* Remove file
 
 Options
 ---
@@ -19,6 +22,18 @@ Options
 1. Create VFD with boot sector
 ```
   bin\vfdtool.exe -c -b bin\nbootloader.bin TestFloppy.vfd
+```
+1. List files in directory of a VFD
+```
+  bin\vfdtool.exe -l TestFloppy.vfd
+```
+1. Add a file to a VFD
+```
+  bin\vfdtool.exe -a autoexec.bat TestFloppy.vfd
+```
+1. Remove a file from a VFD
+```
+  bin\vfdtool.exe -r autoexec.bat TestFloppy.vfd
 ```
 
 For more information:

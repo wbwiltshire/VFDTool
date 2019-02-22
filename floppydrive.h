@@ -9,6 +9,7 @@
 #include <string>
 #include "biosparmblock.h"
 #include "directory.h"
+#include "fat12.h"
 
 using std::cout;
 using std::endl;
@@ -21,6 +22,7 @@ class FloppyDrive {
 private:
 	BIOSParmBlock* biosPB;
 	DIRECTORY* directory;
+	FAT12TABLE* fatTable;
 	bool write();
 
 public:
@@ -30,5 +32,7 @@ public:
 	DIRECTORY* readDirectory();
 	bool create();
 	bool createWithBootSector(string);
+	bool addFile(string, Directory*);
+	bool isFormatted();
 	~FloppyDrive();
 };

@@ -18,6 +18,8 @@
 //
 /*************************************************************************************/
 #include "floppydrive.h"
+#include "directory.h"
+#include "fat12.h"
 
 using std::exception;
 using std::ifstream;
@@ -122,6 +124,36 @@ bool FloppyDrive::createWithBootSector(string bsFName) {
 	return status;
 }
 
+bool FloppyDrive::addFile(string name, Directory* directory) {
+	bool status = false;
+	unsigned int size = 0;
+
+	try {
+		ifstream inStream(name, std::ios::binary);
+		if (inStream.good()) {
+			// get size of file
+			inStream.seekg(0, inStream.end);
+			size = inStream.tellg();
+			inStream.seekg(0);
+			// If it's not too big
+			// Add the entry to the directory
+			directory->addEntry(name, size);
+			// Write the directory to the VFD
+			// Write the file to the VFD
+			// Update both FAT tables
+			// Write both FAT tables to VFD
+			inStream.close();
+		}
+		else
+			cout << "File " << name << " doesn't exist." << endl;
+	}
+	catch (exception ex) {
+		cout << "Exception writing VFD file with boot sector: " << ex.what() << endl;
+	}
+
+	return status;
+}
+
 BIOSParmBlock* FloppyDrive::readBIOSParmBlock() {
 	unsigned int bytesRead = 0;
 	char* buffer = new char[SECTORSIZE];
@@ -150,8 +182,37 @@ BIOSParmBlock* FloppyDrive::readBIOSParmBlock() {
 	return biosPB;
 }
 	
+bool FloppyDrive::isFormatted() {
+	FAT12* fat = NULL;
+	unsigned int fatOffset = (biosPB->biosParmBlock.bpbReservedSectors + biosPB->biosParmBlock.bpbHiddenSectors) *
+		biosPB->biosParmBlock.bpbBytesPerSector;
+	bool status = false;
+
+	try {
+
+		ifstream fatStream(Name.c_str(), std::ios::binary);
+		if (fatStream.good()) {
+			fatTable = new FAT12TABLE();
+			fat = new FAT12(fatTable);
+			//jump to the 1st FAT table and read it
+			fatStream.seekg(fatOffset, std::ios::beg);
+			//Note: only need the first sector of the FAT12 table
+			fatStream.read((char *)fatTable, sizeof(FAT12TABLE));
+			status = fat->getCluster(0) == 0 ? false : true;
+			fatStream.close();
+			delete fat;
+		}
+
+	}
+	catch (exception ex) {
+		cout << "Exception determining VFD file format: " << ex.what() << endl;
+	}
+
+	return status;
+}
 
 FloppyDrive::~FloppyDrive() {
 	delete biosPB;
 	delete directory;
+	delete fatTable;
 }

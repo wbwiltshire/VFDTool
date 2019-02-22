@@ -37,6 +37,13 @@ bool Options::validateOptions(int argc, char* argv[]) {
 			arg++;
 			arg++;
 		}
+		//TODO: Need more robust checking for this option (file specified and exists)
+		else if (argString == "-A") {
+			(*this).isAdd = true;
+			(*this).aFileName = argv[arg + 1];
+			arg++;
+			arg++;
+		}
 		//TODO: Need more robust checking for this option (file exists)
 		else {
 			(*this).iFileName = argv[arg];
@@ -63,14 +70,15 @@ bool Options::validateOptions(int argc, char* argv[]) {
 	//}
 
 	//TODO: Need more robust checking for valid combinations of options
-	if ((isCreate || isInfo || isList || isBootSector) && (iFileName.length() > 0))
+	if ((isCreate || isInfo || isList || isBootSector || isAdd) && (iFileName.length() > 0))
 		status = true;
 
 
 	return status;
 }
 string Options::toString() {
-	return "|" + iFileName + "|" + bFileName + "|" + (isInfo ? "true" : "false") + "|" + (isList ? "true" : "false") + "|" +  (isCreate ? "true" : "false") + "|" +  (isBootSector ? "true" : "false");
+	return "|" + iFileName + "|" + bFileName + "|" + aFileName + "|" + (isInfo ? "true" : "false") + "|" + (isList ? "true" : "false") + "|" +  (isCreate ? "true" : "false") + "|" + 
+		(isAdd ? "true" : "false") + "|" +  (isBootSector ? "true" : "false");
 }
 
 Options::~Options() {

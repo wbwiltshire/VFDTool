@@ -18,7 +18,9 @@ private:
 public:
 	string iFileName;
 	string bFileName;
+	string aFileName;
 	bool isInfo = false;
+	bool isAdd = false;
 	bool isCreate = false;
 	bool isBootSector = false;
 	bool isList = false;

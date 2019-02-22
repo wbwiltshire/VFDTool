@@ -22,7 +22,7 @@ all: $(ODIR)\$(EXE) $(ODIR)\nbootloader.bin
 .cpp{$(ODIR)}.obj: 
 	$(CC) $(CFLAGS) $** /Fo$@
 
-$(ODIR)\$(EXE): $(ODIR)\main.obj $(ODIR)\options.obj $(ODIR)\floppydrive.obj $(ODIR)\biosparmblock.obj $(ODIR)\directory.obj
+$(ODIR)\$(EXE): $(ODIR)\main.obj $(ODIR)\options.obj $(ODIR)\floppydrive.obj $(ODIR)\biosparmblock.obj $(ODIR)\directory.obj $(ODIR)\fat12.obj
 	$(LINK) $** $(LFLAGS) /out:$@
 
 test:

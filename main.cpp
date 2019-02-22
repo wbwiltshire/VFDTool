@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 				biosPB = floppy->readBIOSParmBlock();
 				if (biosPB) {
 					biosPB->print();
+					cout << "Formatted                : " << (floppy->isFormatted() ? "True" : "False") << endl;;
 					status = 0;
 				}
 			}
@@ -80,6 +81,20 @@ int main(int argc, char *argv[])
 						directory = new Directory(dirEntries, biosPB->biosParmBlock.bpbRootEntries);
 						directory->print();
 						status = 0;
+						delete directory;
+					}
+				}
+			}
+			else if (options->isAdd) {
+				biosPB = floppy->readBIOSParmBlock();
+				if (biosPB) {
+					dirEntries = floppy->readDirectory();
+					if (dirEntries) {
+						directory = new Directory(dirEntries, biosPB->biosParmBlock.bpbRootEntries);
+						if (directory) {
+							if (floppy->addFile(options->aFileName, directory))
+								status = 0;
+						}
 						delete directory;
 					}
 				}
