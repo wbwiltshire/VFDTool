@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 	BIOSParmBlock* biosPB = NULL;
 	DIRECTORY* dirEntries = NULL;
 	Directory* directory = NULL;
+	string filesystem;
 
 	if (options->validateOptions(argc, argv)) {
 
@@ -69,7 +70,8 @@ int main(int argc, char *argv[])
 				biosPB = floppy->readBIOSParmBlock();
 				if (biosPB) {
 					biosPB->print();
-					cout << "Formatted                : " << (floppy->isFormatted() ? "True" : "False") << endl;;
+					filesystem = floppy->format();
+					cout << "Filesystem detected      : " << filesystem << " (" << (floppy->isFormatted() ? "formatted)" : "not formatted)") <<  endl;;
 					status = 0;
 				}
 			}
@@ -101,6 +103,7 @@ int main(int argc, char *argv[])
 			}
 			else if (options->isCreate) {
 				if (floppy->create()) {
+					cout << "created " << floppy->Name << " VFD file" << endl;
 					status = 0;
 				}
 				else {
@@ -109,6 +112,7 @@ int main(int argc, char *argv[])
 
 				if (options->isBootSector) {
 					if (floppy->createWithBootSector(options->bFileName)) {
+						cout << "wrote " << options->bFileName << " to " << floppy->Name << endl;
 						status = 0;
 					}
 					else {

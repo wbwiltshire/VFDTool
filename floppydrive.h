@@ -17,16 +17,18 @@ using std::string;
 
 // Constants
 const unsigned int SECTORSIZE = 512;
+enum FORMAT { FAT_12, FAT_16, UNKNOWN };
 
 class FloppyDrive {
 private:
-	BIOSParmBlock* biosPB;
-	DIRECTORY* directory;
-	FAT12TABLE* fatTable;
+	BIOSParmBlock* biosPB = NULL;
+	DIRECTORY* directory = NULL;
+	FAT12TABLE* fatTable = NULL;
 	bool write();
 
 public:
 	string Name;
+	FORMAT Format = UNKNOWN;
 	FloppyDrive(string);
 	BIOSParmBlock* readBIOSParmBlock();
 	DIRECTORY* readDirectory();
@@ -34,5 +36,6 @@ public:
 	bool createWithBootSector(string);
 	bool addFile(string, Directory*);
 	bool isFormatted();
+	string format();
 	~FloppyDrive();
 };

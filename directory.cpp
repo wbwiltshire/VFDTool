@@ -7,6 +7,7 @@
 Directory::Directory(DIRECTORY* d, unsigned short entries) : directory(d), numberOfEntries(entries) {
 }
 
+///TODO: Need to check the Directory attribute to differentiate between files and directories
 void Directory::print() {
 
 	cout << "Directory listing:\n" << endl;
@@ -18,11 +19,10 @@ void Directory::print() {
 		//  Quit when we find the first blank entry
 		if (isEmpty(fileName, extName))
 			break;
-		ptr += 1;
 		cout << fileName << "." << extName << "     " << FormatWithCommas(ptr->fileSize) << " bytes" << endl;
 		// reset the locale
 		cout.imbue(std::locale("C"));
-		
+		ptr += 1;
 	}
 }
 
@@ -39,6 +39,7 @@ bool Directory::addEntry(string fName, unsigned int size) {
 	return status;
 }
 
+//Directory entry can be empty if first by is E5 or '\0'
 unsigned short Directory::freeEntries() {
 	unsigned int entries = 0;
 	DIRECTORY* ptr = directory;
@@ -57,6 +58,7 @@ unsigned short Directory::freeEntries() {
 	return (numberOfEntries - entries);
 }
 
+//Directory entry can be empty if first by is E5 or '\0'
 bool Directory::isEmpty(string& f, string& e) {
 	bool status = false;
 

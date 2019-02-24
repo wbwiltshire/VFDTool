@@ -2,19 +2,17 @@
 // Floppy Drive class
 //
 // Floppy Drive layout
-// -------------------------------------
-// | Boot Sector (512 bytes)           |
-// -------------------------------------
-// | Extended Boot Sector (512 bytes)  |
-// -------------------------------------
-// | FAT 1 (512 bytes)                 |
-// -------------------------------------
-// | FAT 2 (512 bytes)                 |
-// -------------------------------------
-// | Root Directory (512 bytes)        |
-// -------------------------------------
-// | Data ( bytes)                     |
-// -------------------------------------
+// ----------------------------------------------------------
+// | Boot Sector (512 bytes) 1 sector                       |
+// ----------------------------------------------------------
+// | FAT 1 (9 sectors * 512 = 4,608 bytes)                  |
+// ----------------------------------------------------------
+// | FAT 2 (9 sectors * 512 = 4,608 bytes)                  |
+// ----------------------------------------------------------
+// | Root Directory (224 * 32 = 7,169 bytes) or 14 sectors  |
+// ----------------------------------------------------------
+// | Data ( bytes) rest of the disk / files                 |
+// ----------------------------------------------------------
 //
 /*************************************************************************************/
 #include "floppydrive.h"
@@ -139,9 +137,9 @@ bool FloppyDrive::addFile(string name, Directory* directory) {
 			// Add the entry to the directory
 			directory->addEntry(name, size);
 			// Write the directory to the VFD
-			// Write the file to the VFD
-			// Update both FAT tables
-			// Write both FAT tables to VFD
+			// Write each sector to the file to the VFD
+			// Update the FAT table
+			// Write FAT table to bot VFD FAT tables
 			inStream.close();
 		}
 		else
@@ -181,34 +179,66 @@ BIOSParmBlock* FloppyDrive::readBIOSParmBlock() {
 	delete[] buffer;
 	return biosPB;
 }
-	
+
 bool FloppyDrive::isFormatted() {
-	FAT12* fat = NULL;
-	unsigned int fatOffset = (biosPB->biosParmBlock.bpbReservedSectors + biosPB->biosParmBlock.bpbHiddenSectors) *
-		biosPB->biosParmBlock.bpbBytesPerSector;
 	bool status = false;
+	unsigned char FAT12_Formatted[3] = { 0xf0, 0xff, 0xff };
+	unsigned char FAT16_Formatted[4] = { 0xf0, 0xff, 0xff, 0xff };
+	unsigned short FATsector = (biosPB->biosParmBlock.bpbReservedSectors + biosPB->biosParmBlock.bpbHiddenSectors + biosPB->biosParmBlock.bpbTotalSectorsBig)
+		* biosPB->biosParmBlock.bpbBytesPerSector;
+	char buffer[4];
 
 	try {
+		if (Format == FAT_12 || Format == FAT_16) {
+			ifstream inStream(Name.c_str(), std::ios::binary);
+			if (inStream.good()) {
+				// Jump to the first FAT Table
+				inStream.seekg(FATsector, std::ios::beg);
 
-		ifstream fatStream(Name.c_str(), std::ios::binary);
-		if (fatStream.good()) {
-			fatTable = new FAT12TABLE();
-			fat = new FAT12(fatTable);
-			//jump to the 1st FAT table and read it
-			fatStream.seekg(fatOffset, std::ios::beg);
-			//Note: only need the first sector of the FAT12 table
-			fatStream.read((char *)fatTable, sizeof(FAT12TABLE));
-			status = fat->getCluster(0) == 0 ? false : true;
-			fatStream.close();
-			delete fat;
+				if (Format == FAT_12) {
+					inStream.read(buffer, 3);
+					if (memcmp(buffer, FAT12_Formatted, 3) == 0)
+						status = true;
+				}
+				else{
+					inStream.read(buffer, 4);
+					if (memcmp(buffer, FAT16_Formatted, 4) == 0)
+						status = true;
+				}
+				inStream.close();
+			}
+			else
+				cout << "File " << Name << " doesn't exist." << endl;
 		}
-
 	}
 	catch (exception ex) {
-		cout << "Exception determining VFD file format: " << ex.what() << endl;
+		cout << "Exception in FloppyDrive::isFormattted(): " << ex.what() << endl;
+	}
+	return status;
+}
+
+string  FloppyDrive::format() {
+	string description;
+	unsigned short rootDirSectors = ((biosPB->biosParmBlock.bpbRootEntries * 32) + (biosPB->biosParmBlock.bpbBytesPerSector - 1)) /
+		biosPB->biosParmBlock.bpbBytesPerSector;
+	unsigned int dataSectors = biosPB->biosParmBlock.bpbTotalSectors - (biosPB->biosParmBlock.bpbReservedSectors +
+		(biosPB->biosParmBlock.bpbNumberOfFATs * biosPB->biosParmBlock.bpbSectorsPerFAT) + rootDirSectors);
+	unsigned int clusterCount = dataSectors / biosPB->biosParmBlock.bpbSectorsPerCluster;		// rounds down
+
+	if (clusterCount < 4085) {
+		Format = FAT_12;
+		description = "FAT12";
+	}
+	else if (clusterCount < 65525) {
+		Format = FAT_16;
+		description = "FAT16";
+	}
+	else {
+		Format = UNKNOWN;
+		description = "UNKNOWN";
 	}
 
-	return status;
+	return description;
 }
 
 FloppyDrive::~FloppyDrive() {

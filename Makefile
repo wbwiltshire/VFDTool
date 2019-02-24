@@ -11,12 +11,12 @@ LINK=link
 #Link with debug info
 LFLAGS= /DEBUG /SUBSYSTEM:CONSOLE /MACHINE:X64
 ODIR=bin
-ASMDIR=bootloader
+ASMDIR=bin
 EXE=VFDTool.exe
 
-all: $(ODIR)\$(EXE) $(ODIR)\nbootloader.bin
+all: $(ODIR)\$(EXE) $(ASMDIR)\FAT12.bin
 
-.asm{$(ODIR)}.bin:  
+.asm{$(ASMDIR)}.bin:  
 	$(AS) $(ASLAGS) $** -o$@
 
 .cpp{$(ODIR)}.obj: 
@@ -28,7 +28,10 @@ $(ODIR)\$(EXE): $(ODIR)\main.obj $(ODIR)\options.obj $(ODIR)\floppydrive.obj $(O
 test:
 	@bin\$(EXE) -i BlankFloppy.VFD
 #	@bin\$(EXE) -c TestFloppy.VFD
-#	@bin\$(EXE) -c -b bin\nbootloader.bin TestFloppy.VFD
+#	@bin\$(EXE) -c -b bin\FAT12.bin TestFloppy.VFD
+#	@bin\$(EXE) -l TestFloppy.VFD
+#	@bin\$(EXE) -a main.cpp TestFloppy.VFD
+#	@bin\$(EXE) -r main.cpp TestFloppy.VFD
 
 clean:
 	@IF EXIST *.pdb (del *.pdb)
