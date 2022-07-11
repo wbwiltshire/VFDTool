@@ -22,47 +22,68 @@
 using std::exception;
 using std::ifstream;
 using std::ofstream;
+using std::fstream;
+
+unsigned char FAT12_Formatted[3] = { 0xf0, 0xff, 0xff };
+unsigned char FAT16_Formatted[4] = { 0xf0, 0xff, 0xff, 0xff };
 
 FloppyDrive::FloppyDrive(string n) : Name (n) {
 	biosPB = new BIOSParmBlock();
 }
-
-bool FloppyDrive::write() {
-	bool status = false;
-	unsigned short sectorSize = biosPB->biosParmBlock.bpbBytesPerSector;
-	char* buffer = new char[sectorSize];
-
-	try {
-		// if file exists, then over-write
-		ofstream createStream(Name.c_str(), std::ios::binary);
-		if (createStream.good()) {
-			// 1. Write BIOSParmBlock
-			memcpy(buffer, &biosPB->biosParmBlock, sectorSize);
-			createStream.write(buffer, sectorSize);
-			//fwrite(&test, 1, biosPB->SectorSize(), outFile);
-			// 2. Write (totalSectors - 1) of 0's
-			memset(buffer, 0, sectorSize);
-			for (unsigned short cnt = 0; cnt < (biosPB->biosParmBlock.bpbTotalSectors - 1); cnt++)
-				createStream.write(buffer, sectorSize);
-			    //bytesWritten = infoStream.gcount();
-			status = true;
-			createStream.close();
-			delete[] buffer;
-		}
-	}
-	catch (exception ex) {
-		cout << "Exception writing VFD file: " << ex.what() << endl;
-	}
-
-	return status;
-}
-
 bool FloppyDrive::create() {
 	bool status = false;
 
 	biosPB->setFAT12();
+	Format = FORMAT::FAT_12;
 	if (write())
 		status = true;
+
+	return status;
+}
+
+// Write the FAT initial cluster markers
+bool FloppyDrive::format() {
+	bool status = false;
+	unsigned short FATSector = (biosPB->biosParmBlock.bpbReservedSectors + biosPB->biosParmBlock.bpbHiddenSectors + biosPB->biosParmBlock.bpbTotalSectorsBig)
+		* biosPB->biosParmBlock.bpbBytesPerSector;
+	char buffer[4];
+
+	try {
+		// Open the VFD file for output
+		fstream outStream(Name.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+		if (outStream.good()) {
+			// move to the first FAT table
+			outStream.seekg(FATSector, std::ios::beg);
+
+			if (Format == FAT_12) {
+				memcpy(buffer, FAT12_Formatted, sizeof(FAT12_Formatted));
+			}
+			else if (Format == FAT_16) {
+				memcpy(buffer, FAT16_Formatted, sizeof(FAT16_Formatted));
+			}
+			else
+				cout << "Error: Unknown FAT format" << endl;
+
+			// Write the first FAT cluster marker
+			outStream.write(buffer, sizeof(buffer));
+
+			// move to the Second FAT table
+			FATSector += biosPB->biosParmBlock.bpbSectorsPerFAT * biosPB->biosParmBlock.bpbBytesPerSector;
+			outStream.seekg(FATSector, std::ios::beg);
+
+			// Write the 2nd FAT cluster marker
+			outStream.write(buffer, sizeof(buffer));
+
+			status = true;
+			outStream.close();
+		}
+		else {
+			cout << "Unable to VFD file: " << Name << endl;
+		}
+	}
+	catch (exception ex) {
+		cout << "Exception writing VFD file with boot sector: " << ex.what() << endl;
+	}
 
 	return status;
 }
@@ -85,7 +106,7 @@ DIRECTORY* FloppyDrive::readDirectory() {
 	return directory;
 }
 
-bool FloppyDrive::createWithBootSector(string bsFName) {
+bool FloppyDrive::writeBootSector(string bsFName) {
 	bool status = false;
 	short size = 0;
 	unsigned short sectorSize = biosPB->biosParmBlock.bpbBytesPerSector;
@@ -105,7 +126,7 @@ bool FloppyDrive::createWithBootSector(string bsFName) {
 			bsStream.read(buffer, sectorSize);
 			memcpy(&biosPB->biosParmBlock, buffer, sectorSize);
 
-			// Write the new VFD will with the boot sector just read
+			// Write the new VFD with the boot sector just read
 			if (write())
 				status = true;
 		}
@@ -182,8 +203,6 @@ BIOSParmBlock* FloppyDrive::readBIOSParmBlock() {
 
 bool FloppyDrive::isFormatted() {
 	bool status = false;
-	unsigned char FAT12_Formatted[3] = { 0xf0, 0xff, 0xff };
-	unsigned char FAT16_Formatted[4] = { 0xf0, 0xff, 0xff, 0xff };
 	unsigned short FATsector = (biosPB->biosParmBlock.bpbReservedSectors + biosPB->biosParmBlock.bpbHiddenSectors + biosPB->biosParmBlock.bpbTotalSectorsBig)
 		* biosPB->biosParmBlock.bpbBytesPerSector;
 	char buffer[4];
@@ -217,7 +236,7 @@ bool FloppyDrive::isFormatted() {
 	return status;
 }
 
-string  FloppyDrive::format() {
+string  FloppyDrive::getFormat() {
 	string description;
 	unsigned short rootDirSectors = ((biosPB->biosParmBlock.bpbRootEntries * 32) + (biosPB->biosParmBlock.bpbBytesPerSector - 1)) /
 		biosPB->biosParmBlock.bpbBytesPerSector;
@@ -240,6 +259,38 @@ string  FloppyDrive::format() {
 
 	return description;
 }
+
+bool FloppyDrive::write() {
+	bool status = false;
+	unsigned short sectorSize = biosPB->biosParmBlock.bpbBytesPerSector;
+	char* buffer = new char[sectorSize];
+
+	try {
+		// if file exists, then over-write
+		ofstream createStream(Name.c_str(), std::ios::binary);
+		if (createStream.good()) {
+			// 1. Write BIOSParmBlock
+			memcpy(buffer, &biosPB->biosParmBlock, sectorSize);
+			createStream.write(buffer, sectorSize);
+			//fwrite(&test, 1, biosPB->SectorSize(), outFile);
+			// 2. Write (totalSectors - 1) of 0's
+			memset(buffer, 0, sectorSize);
+			for (unsigned short cnt = 0; cnt < (biosPB->biosParmBlock.bpbTotalSectors - 1); cnt++)
+				createStream.write(buffer, sectorSize);
+			//bytesWritten = infoStream.gcount();
+			status = true;
+			createStream.close();
+			delete[] buffer;
+		}
+	}
+	catch (exception ex) {
+		cout << "Exception writing VFD file: " << ex.what() << endl;
+	}
+
+	return status;
+}
+
+
 
 FloppyDrive::~FloppyDrive() {
 	delete biosPB;

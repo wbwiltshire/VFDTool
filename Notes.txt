@@ -1,2 +1,4 @@
 ndisasm -e 62 -b 16 BlankFloppy.vfd | more
 od -A x -t x2z BlankFloppy.vfd | more
+imagefs c TestFloppy.vfd 2880
+minfo -i TestFloppy.vfd

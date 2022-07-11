@@ -13,32 +13,34 @@ bool Options::validateOptions(int argc, char* argv[]) {
 
 	while (arg < argc) {
 		argString = string(argv[arg]);
+
+		// Convert to upper case
 		transform(argString.begin(), argString.end(), argString.begin(), ::toupper);
 
-		if (argString == "-I")
+		if (argString == "-INFO")
 		{
 			(*this).isInfo = true;
 			arg++;
 		}
-		if (argString == "-L")
+		if (argString == "-LIST")
 		{
 			(*this).isList = true;
 			arg++;
 		}
-		else if (argString == "-C")
+		else if (argString == "-INIT")
 		{
 			(*this).isCreate = true;
 			arg++;
 		}
 		//TODO: Need more robust checking for this option (file specified and exists)
-		else if (argString == "-B") {
+		else if (argString == "-BOOT") {
 			(*this).isBootSector = true;
 			(*this).bFileName = argv[arg + 1];
 			arg++;
 			arg++;
 		}
 		//TODO: Need more robust checking for this option (file specified and exists)
-		else if (argString == "-A") {
+		else if (argString == "-ADD") {
 			(*this).isAdd = true;
 			(*this).aFileName = argv[arg + 1];
 			arg++;

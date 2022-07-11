@@ -29,7 +29,7 @@ using std::transform;
 // Globals
 
 // Function Prototypes
-void printUsage();
+void printUsage(string);
 
 //unsigned char FAT_table[sector_size];
 //unsigned int fat_offset = active_cluster + (active_cluster / 2);// multiply by 1.5
@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 	DIRECTORY* dirEntries = NULL;
 	Directory* directory = NULL;
 	string filesystem;
+	string version = "0.9.0";
 
 	if (options->validateOptions(argc, argv)) {
 
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 				biosPB = floppy->readBIOSParmBlock();
 				if (biosPB) {
 					biosPB->print();
-					filesystem = floppy->format();
+					filesystem = floppy->getFormat();
 					cout << "Filesystem detected      : " << filesystem << " (" << (floppy->isFormatted() ? "formatted)" : "not formatted)") <<  endl;;
 					status = 0;
 				}
@@ -101,25 +102,51 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
-			else if (options->isCreate) {
+			// Create option only
+			else if (options->isCreate && !options->isBootSector) {
 				if (floppy->create()) {
-					cout << "created " << floppy->Name << " VFD file" << endl;
-					status = 0;
+					cout << "created VFD file: " << floppy->Name << endl;
+					if (floppy->format()) {
+						cout << "formatted as " << floppy->getFormat() << endl;
+						status = 0;
+					}
 				}
 				else {
 					cout << "Unable to create VFD file  " << floppy->Name << endl;
 				}
 
-				if (options->isBootSector) {
-					if (floppy->createWithBootSector(options->bFileName)) {
+			}
+			// Create and write boot sector
+			else if (options->isCreate && options->isBootSector) {
+				if (floppy->create()) {
+					cout << "created VFD file: " << floppy->Name << endl;
+					if (floppy->writeBootSector(options->bFileName)) {
 						cout << "wrote " << options->bFileName << " to " << floppy->Name << endl;
+						if (floppy->format()) {
+							cout << "formatted as " << floppy->getFormat() << endl;
+							status = 0;
+						}
+						else {
+							cout << "Unable to create VFD file " << floppy->Name << " with boot sector" << endl;
+						}
+					}
+				}
+				else {
+					cout << "Unable to create VFD file  " << floppy->Name << endl;
+				}
+			}
+			// Write bootsector only
+			else if (!options->isCreate && options->isBootSector) {
+				if (floppy->writeBootSector(options->bFileName)) {
+					cout << "wrote " << options->bFileName << " to " << floppy->Name << endl;
+					if (floppy->format()) {
+						cout << "re-formatted as " << floppy->getFormat() << endl;
 						status = 0;
 					}
 					else {
-						cout << "Unable to create VFD file with boot sector " << floppy->Name << endl;
+						cout << "Unable to format VFD file " << floppy->Name << " with boot sector" << endl;
 					}
 				}
-
 			}
 
 			delete floppy;
@@ -131,7 +158,7 @@ int main(int argc, char *argv[])
 		cout << endl << options->toString() << endl;
 	}
 	else {
-		printUsage();
+		printUsage(version);
 		status = 1;
 	}
 
@@ -139,13 +166,16 @@ int main(int argc, char *argv[])
 	return status;
 }
 
-void printUsage() {
+void printUsage(string v) {
+	cout << "VFDTool (version " << v << ")" << endl;
 	cout << "Usage: VFDTool <options> <fileName>" << endl;
-	cout << "\t-i            : print VFD file info" << endl;
-	cout << "\t-c            : create VFD file" << endl;
-	cout << "\t-b <fileName> : Write boot sector to VFD" << endl;
-	cout << "\t-l            : list files in VFD file directory" << endl;
-	cout << "\t-a <fileName> : add file to a VFD file directory" << endl;
-	cout << "\t-r <fileName> : remove a file from VFD file directory" << endl;
+	cout << "\t-info            : print VFD file info" << endl;
+	cout << "\t-init            : create VFD file" << endl;
+	cout << "\t-boot <fileName> : Write boot sector to VFD" << endl;
+	cout << "\t-list            : list files in VFD file directory" << endl;
+	cout << "\t-add <fileName>  : add file to a VFD file directory" << endl;
+	cout << "\t-del <fileName>  : delete a file from VFD file directory" << endl;
+	cout << "\t-adir <dirName>  : add a directory to VFD file" << endl;
+	cout << "\t-rdir <dirName>  : delete a directory from VFD file" << endl;
 	cout << "\t<fileName>    : name of VFD file" << endl;
 }

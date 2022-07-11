@@ -1,6 +1,7 @@
 /*************************************************************************************/
 // Floppy Drive class header
 /*************************************************************************************/
+#pragma once
 #include <iostream>
 #include <algorithm>
 #include <exception>
@@ -33,9 +34,10 @@ public:
 	BIOSParmBlock* readBIOSParmBlock();
 	DIRECTORY* readDirectory();
 	bool create();
-	bool createWithBootSector(string);
+	bool format();
+	bool writeBootSector(string);
 	bool addFile(string, Directory*);
 	bool isFormatted();
-	string format();
+	string getFormat();
 	~FloppyDrive();
 };
