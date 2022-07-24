@@ -30,18 +30,34 @@ unsigned char FAT16_Formatted[4] = { 0xf0, 0xff, 0xff, 0xff };
 FloppyDrive::FloppyDrive(string n) : Name (n) {
 	biosPB = new BIOSParmBlock();
 }
+
+//
+// Create the physical file and format at FAT12
+//  
+// Default:
+//   Media Type: f0 =>  3.5" diskette 1440 KB, 2 heads, 80 tracks, 18 sectors / track
+//   Bytes: 2 heads * 80 tracks * 18 sectors / track = 2880 sectors * 512 bytes / sector = 1,474,560 bytes (1,440 * 1024 = 1,474,560 )
+//   Sectors/Clusters
+//   -------
+//   1		- BPB Sector
+//   18		- 2 FAT * 9 sector / FAT
+//   14		- 1 Directory
+//	 2847	- Data sectors
+//   2880   - Total sectors
 bool FloppyDrive::create() {
 	bool status = false;
 
-	biosPB->setFAT12();
-	Format = FORMAT::FAT_12;
-	if (write())
+	biosPB->setFAT12();				// Initialize BIOS Parameter Block with the defaults described above 
+	Format = FORMAT::FAT_12;		// Mark as formatted as FAT12
+	if (writeToFile())					// Write the BIOS block, FAT Tables, Root Directory, and Data clusters to the physical file
 		status = true;
 
 	return status;
 }
 
+//
 // Write the FAT initial cluster markers
+//
 bool FloppyDrive::format() {
 	bool status = false;
 	unsigned short FATSector = (biosPB->biosParmBlock.bpbReservedSectors + biosPB->biosParmBlock.bpbHiddenSectors + biosPB->biosParmBlock.bpbTotalSectorsBig)
@@ -127,7 +143,7 @@ bool FloppyDrive::writeBootSector(string bsFName) {
 			memcpy(&biosPB->biosParmBlock, buffer, sectorSize);
 
 			// Write the new VFD with the boot sector just read
-			if (write())
+			if (writeToFile())
 				status = true;
 		}
 		else {
@@ -236,31 +252,38 @@ bool FloppyDrive::isFormatted() {
 	return status;
 }
 
-string  FloppyDrive::getFormat() {
+/*************************************************************************************/
+//
+// Determine format (FAT12/FAT16/FAT32)
+// Document: Micorosoft FAT32 System Specification - page 14
+// Link: http://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/fatgen103.doc
+//
+/*************************************************************************************/
+string  FloppyDrive::getFATFormat() {
 	string description;
 	unsigned short rootDirSectors = ((biosPB->biosParmBlock.bpbRootEntries * 32) + (biosPB->biosParmBlock.bpbBytesPerSector - 1)) /
 		biosPB->biosParmBlock.bpbBytesPerSector;
 	unsigned int dataSectors = biosPB->biosParmBlock.bpbTotalSectors - (biosPB->biosParmBlock.bpbReservedSectors +
 		(biosPB->biosParmBlock.bpbNumberOfFATs * biosPB->biosParmBlock.bpbSectorsPerFAT) + rootDirSectors);
-	unsigned int clusterCount = dataSectors / biosPB->biosParmBlock.bpbSectorsPerCluster;		// rounds down
+	unsigned int dataClusterCount = dataSectors / biosPB->biosParmBlock.bpbSectorsPerCluster;			// (rounds down)
 
-	if (clusterCount < 4085) {
+	if (dataClusterCount <= FAT12_DATACLUSTERCOUNT) {
 		Format = FAT_12;
 		description = "FAT12";
 	}
-	else if (clusterCount < 65525) {
+	else if (dataClusterCount <= FAT16_DATACLUSTERCOUNT) {
 		Format = FAT_16;
 		description = "FAT16";
 	}
 	else {
-		Format = UNKNOWN;
-		description = "UNKNOWN";
+		Format = FAT_32;
+		description = "FAT32";
 	}
 
 	return description;
 }
 
-bool FloppyDrive::write() {
+bool FloppyDrive::writeToFile() {
 	bool status = false;
 	unsigned short sectorSize = biosPB->biosParmBlock.bpbBytesPerSector;
 	char* buffer = new char[sectorSize];
@@ -289,8 +312,6 @@ bool FloppyDrive::write() {
 
 	return status;
 }
-
-
 
 FloppyDrive::~FloppyDrive() {
 	delete biosPB;

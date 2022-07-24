@@ -71,10 +71,13 @@ int main(int argc, char *argv[])
 				biosPB = floppy->readBIOSParmBlock();
 				if (biosPB) {
 					biosPB->print();
-					filesystem = floppy->getFormat();
+					filesystem = floppy->getFATFormat();
 					cout << "Filesystem detected      : " << filesystem << " (" << (floppy->isFormatted() ? "formatted)" : "not formatted)") <<  endl;;
 					status = 0;
 				}
+				// TODO: Probably need to have else for case when biosPB is NULL
+				//else {
+				//}
 			}
 			else if (options->isList) {
 				biosPB = floppy->readBIOSParmBlock();
@@ -107,7 +110,7 @@ int main(int argc, char *argv[])
 				if (floppy->create()) {
 					cout << "created VFD file: " << floppy->Name << endl;
 					if (floppy->format()) {
-						cout << "formatted as " << floppy->getFormat() << endl;
+						cout << "formatted as " << floppy->getFATFormat() << endl;
 						status = 0;
 					}
 				}
@@ -123,7 +126,7 @@ int main(int argc, char *argv[])
 					if (floppy->writeBootSector(options->bFileName)) {
 						cout << "wrote " << options->bFileName << " to " << floppy->Name << endl;
 						if (floppy->format()) {
-							cout << "formatted as " << floppy->getFormat() << endl;
+							cout << "formatted as " << floppy->getFATFormat() << endl;
 							status = 0;
 						}
 						else {
@@ -140,7 +143,7 @@ int main(int argc, char *argv[])
 				if (floppy->writeBootSector(options->bFileName)) {
 					cout << "wrote " << options->bFileName << " to " << floppy->Name << endl;
 					if (floppy->format()) {
-						cout << "re-formatted as " << floppy->getFormat() << endl;
+						cout << "re-formatted as " << floppy->getFATFormat() << endl;
 						status = 0;
 					}
 					else {

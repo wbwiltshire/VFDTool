@@ -18,18 +18,20 @@ using std::string;
 
 // Constants
 const unsigned int SECTORSIZE = 512;
-enum FORMAT { FAT_12, FAT_16, UNKNOWN };
+const unsigned int FAT12_DATACLUSTERCOUNT = 4084;			 // Microsoft FAT32 System Specification
+const unsigned int FAT16_DATACLUSTERCOUNT = 65524;           // Link: http://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/fatgen103.doc
+enum FORMAT { FAT_12, FAT_16, FAT_32, FAT_UNKNOWN };
 
 class FloppyDrive {
 private:
 	BIOSParmBlock* biosPB = NULL;
 	DIRECTORY* directory = NULL;
 	FAT12TABLE* fatTable = NULL;
-	bool write();
+	bool writeToFile();
 
 public:
 	string Name;
-	FORMAT Format = UNKNOWN;
+	FORMAT Format = FAT_UNKNOWN;
 	FloppyDrive(string);
 	BIOSParmBlock* readBIOSParmBlock();
 	DIRECTORY* readDirectory();
@@ -38,6 +40,6 @@ public:
 	bool writeBootSector(string);
 	bool addFile(string, Directory*);
 	bool isFormatted();
-	string getFormat();
+	string getFATFormat();
 	~FloppyDrive();
 };

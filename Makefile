@@ -26,7 +26,7 @@ $(ODIR)\$(EXE): $(ODIR)\main.obj $(ODIR)\options.obj $(ODIR)\floppydrive.obj $(O
 	$(LINK) $** $(LFLAGS) /out:$@
 
 test:
-	@bin\$(EXE) -i BlankFloppy.VFD
+	@bin\$(EXE) -init BlankFloppy.VFD
 #	@bin\$(EXE) -c TestFloppy.VFD
 #	@bin\$(EXE) -c -b bin\FAT12.bin TestFloppy.VFD
 #	@bin\$(EXE) -l TestFloppy.VFD
